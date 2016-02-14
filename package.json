@@ -1,0 +1,16 @@
+{
+  "name": "fredrick",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test/**/*_test.js"
+  },
+  "author": "Brandon Farmer <bthesorceror@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "sinon": "^1.17.3",
+    "tape": "^4.4.0"
+  },
+  "dependencies": {}
+}
