@@ -15,8 +15,16 @@ test('Fredrick responds to help command', function(t) {
 
   fredrick.respond(args);
 
-  t.plan(2);
+  t.plan(4);
   t.ok(fakeStdout.write.calledWith('Help:\n'), 'writes header');
+
+  t.ok(
+    fakeStdout.write.calledWith("'fredrick list' lists all available commands.\n"),
+    'writes help for list');
+
+  t.ok(
+    fakeStdout.write.calledWith("'fredrick usage <command>' shows usage for a command.\n"),
+    'writes help for usage');
 
   t.ok(fakeExit.calledWith(0), 'exits cleanly');
 
