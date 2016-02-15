@@ -2,6 +2,46 @@ var test     = require('tape');
 var Fredrick = require('../index');
 var sinon    = require('sinon');
 
+test('Fredrick allows options', function(t) {
+
+    t.plan(3);
+
+    var fakeStdout = { write: sinon.spy() };
+    var fakeExit   = sinon.spy();
+
+    var fredrick = new Fredrick('fredrick', {
+      stdout: fakeStdout, exit: fakeExit
+    });
+
+    function func(fredrick, args, options) {
+      t.ok(true, 'calls func');
+      t.deepEqual(
+        args,
+        ['list'],
+        'does not removes the subcommand from args');
+
+      t.equal(
+        options.prod,
+        true,
+        'receives prod as option');
+      return;
+    }
+
+    fredrick.addPlugin({
+      command: 'test1',
+      func: func,
+      description: 'description 1',
+      usage: 'usage 1',
+      subcommands: {
+      }
+    });
+
+    var args = ['test1', 'list', '--prod'];
+
+    fredrick.respond(args);
+
+});
+
 test('Fredrick allows for subcommands', function(t) {
 
   t.test('with valid subcommand', function(t) {
