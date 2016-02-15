@@ -2,6 +2,80 @@ var test     = require('tape');
 var Fredrick = require('../index');
 var sinon    = require('sinon');
 
+test('Fredrick allows for subcommands', function(t) {
+
+  t.test('with valid subcommand', function(t) {
+
+    t.plan(2);
+
+    var fakeStdout = { write: sinon.spy() };
+    var fakeExit   = sinon.spy();
+
+    var fredrick = new Fredrick('fredrick', {
+      stdout: fakeStdout, exit: fakeExit
+    });
+
+    function noop() { };
+
+    function list(fredrick, args) {
+      t.ok(true, 'calls subcommand');
+      t.deepEqual(args, [], 'removes the subcommand from args');
+      return;
+    }
+
+    fredrick.addPlugin({
+      command: 'test1',
+      func: noop,
+      description: 'description 1',
+      usage: 'usage 1',
+      subcommands: {
+        list: list
+      }
+    });
+
+    var args = ['test1', 'list'];
+
+    fredrick.respond(args);
+
+  });
+
+  t.test('with invalid subcommand', function(t) {
+
+    t.plan(2);
+
+    var fakeStdout = { write: sinon.spy() };
+    var fakeExit   = sinon.spy();
+
+    var fredrick = new Fredrick('fredrick', {
+      stdout: fakeStdout, exit: fakeExit
+    });
+
+    function func(fredrick, args, options) {
+      t.ok(true, 'calls func');
+      t.deepEqual(
+        args,
+        ['list'],
+        'does not removes the subcommand from args');
+      return;
+    }
+
+    fredrick.addPlugin({
+      command: 'test1',
+      func: func,
+      description: 'description 1',
+      usage: 'usage 1',
+      subcommands: {
+      }
+    });
+
+    var args = ['test1', 'list'];
+
+    fredrick.respond(args);
+
+  });
+
+});
+
 test('Fredrick responds to help command', function(t) {
 
   var fakeStdout = { write: sinon.spy() };

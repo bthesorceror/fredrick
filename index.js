@@ -92,8 +92,15 @@ class Fredrick {
     if (!plugin) return;
 
     var options  = minimist(args.slice(1));
+    var args     = options._;
 
-    plugin.func(this, options._, options);
+    if (args[0] &&
+        plugin.subcommands &&
+        plugin.subcommands[args[0]]) {
+      return plugin.subcommands[args[0]](this, args.slice(1), options);
+    }
+
+    plugin.func(this, args, options);
   }
 
   findPlugin(command) {
