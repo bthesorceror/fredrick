@@ -12,5 +12,7 @@
     "sinon": "^1.17.3",
     "tape": "^4.4.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "minimist": "^1.2.0"
+  }
 }

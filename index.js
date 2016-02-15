@@ -1,5 +1,7 @@
 'use strict';
 
+const minimist = require('minimist');
+
 const help = {
   command: 'help',
   hidden: true,
@@ -89,8 +91,9 @@ class Fredrick {
 
     if (!plugin) return;
 
-    args = args.slice(1);
-    plugin.func(this, args);
+    var options  = minimist(args.slice(1));
+
+    plugin.func(this, options._, options);
   }
 
   findPlugin(command) {
