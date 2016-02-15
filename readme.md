@@ -1,5 +1,7 @@
 # Fredrick
 
+[![Build Status](https://travis-ci.org/bthesorceror/fredrick.svg?branch=master)](https://travis-ci.org/bthesorceror/fredrick)
+
 simple module for writing your spiffy command line tools
 
 ## Example
