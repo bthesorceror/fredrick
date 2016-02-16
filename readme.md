@@ -15,12 +15,17 @@ let fredrick = new Fredrick('fredrick');
 
 fredrick.addPlugin({
   command: 'test',
-  usage: 'fredrick test [--prod]',
+  usage: 'fredrick test [--prod] [--error]',
   description: 'a test command',
   func(fredrick, args, options) {
     if (options.prod) {
       fredrick.write('PRODUCTION!');
     }
+
+    if (options.error) {
+      fredrick.error('MY BAD!');
+    }
+
     fredrick.write('TESTING');
     fredrick.exit(0);
   },

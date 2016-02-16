@@ -69,6 +69,7 @@ class Fredrick {
     options      = options || {};
     this.name    = name;
     this.stdout  = options.stdout || process.stdout;
+    this.stderr  = options.stderr || process.stderr;
     this.exit    = options.exit || process.exit.bind(process);
     this.plugins = [];
 
@@ -83,6 +84,14 @@ class Fredrick {
     }
 
     this.stdout.write(`${str}\n`);
+  }
+
+  error(str) {
+    if (!str) {
+      return this.stderr.write('\n');
+    }
+
+    this.stderr.write(`${str}\n`);
   }
 
   respond(args) {

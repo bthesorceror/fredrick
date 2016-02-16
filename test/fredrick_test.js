@@ -2,6 +2,19 @@ var test     = require('tape');
 var Fredrick = require('../index');
 var sinon    = require('sinon');
 
+test('Fredrick allows errors', function(t) {
+  t.plan(1);
+  var fakeStderr = { write: sinon.spy() };
+
+  var fredrick = new Fredrick('fredrick', { stderr: fakeStderr });
+
+  fredrick.error('testing');
+
+  t.ok(
+    fakeStderr.write.calledWith('testing\n'),
+    'writes out to stderr');
+});
+
 test('Fredrick allows options', function(t) {
 
     t.plan(3);
@@ -296,27 +309,27 @@ test('Fredrick responds to list command', function(t) {
   t.ok(fakeStdout.write.calledWith('List:\n'), 'writes header');
 
   t.ok(
-    fakeStdout.write.calledWith('test1\n'), 
+    fakeStdout.write.calledWith('test1\n'),
     'writes test1 command'
   );
 
   t.ok(
-    fakeStdout.write.calledWith('  description 1\n'), 
+    fakeStdout.write.calledWith('  description 1\n'),
     'writes test1 description'
   );
 
   t.ok(
-    fakeStdout.write.calledWith('test2\n'), 
+    fakeStdout.write.calledWith('test2\n'),
     'writes test2 command'
   );
 
   t.ok(
-    fakeStdout.write.calledWith('  description 2\n'), 
+    fakeStdout.write.calledWith('  description 2\n'),
     'writes test2 description'
   );
 
   t.notOk(
-    fakeStdout.write.calledWith('help\n'), 
+    fakeStdout.write.calledWith('help\n'),
     'does not write help command'
   );
 
