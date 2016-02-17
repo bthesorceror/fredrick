@@ -326,11 +326,11 @@ test('Fredrick responds to usage command', function(t) {
 
   t.test('with no command', function(t) {
 
-    var fakeStdout = { write: sinon.spy() };
+    var fakeStderr = { write: sinon.spy() };
     var fakeExit   = sinon.spy();
 
     var fredrick = new Fredrick('fredrick', {
-      stdout: fakeStdout, exit: fakeExit
+      stderr: fakeStderr, exit: fakeExit
     });
 
     var args = ['usage'];
@@ -340,7 +340,7 @@ test('Fredrick responds to usage command', function(t) {
     t.plan(2);
 
     t.ok(
-      fakeStdout.write.calledWith("fredrick usage <command>\n"),
+      fakeStderr.write.calledWith("fredrick usage <command>\n"),
       'write correct use of usage command');
 
     t.ok(fakeExit.calledWith(1), 'exits with error');
@@ -349,11 +349,11 @@ test('Fredrick responds to usage command', function(t) {
 
   t.test('with invalid command', function(t) {
 
-    var fakeStdout = { write: sinon.spy() };
+    var fakeStderr = { write: sinon.spy() };
     var fakeExit   = sinon.spy();
 
     var fredrick = new Fredrick('fredrick', {
-      stdout: fakeStdout, exit: fakeExit
+      stderr: fakeStderr, exit: fakeExit
     });
 
     var args = ['usage', 'test1'];
@@ -363,7 +363,7 @@ test('Fredrick responds to usage command', function(t) {
     t.plan(2);
 
     t.ok(
-      fakeStdout.write.calledWith("Invalid command\n"),
+      fakeStderr.write.calledWith("Invalid command\n"),
       'write for invalid command');
 
     t.ok(fakeExit.calledWith(1), 'exits with error');
