@@ -40,7 +40,10 @@ class Fredrick {
     let command = args[0];
     let plugin  = this.findPlugin(command);
 
-    if (!plugin) return;
+    if (!plugin) {
+      this.error('Invalid command');
+      return this.exit(1);
+    }
 
     var options  = minimist(args.slice(1));
     var args     = options._;

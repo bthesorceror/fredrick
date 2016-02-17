@@ -322,6 +322,26 @@ test('Fredrick responds to help command', function(t) {
 
 });
 
+test('Fredrick handles invalid commands', function(t) {
+
+  var fakeStderr = { write: sinon.spy() };
+  var fakeExit   = sinon.spy();
+
+  var fredrick = new Fredrick('fredrick', {
+    stderr: fakeStderr, exit: fakeExit
+  });
+
+  var args = ['testing'];
+
+  fredrick.respond(args);
+
+  t.plan(2);
+  t.ok(fakeStderr.write.calledWith('Invalid command\n'), 'writes error');
+
+  t.ok(fakeExit.calledWith(1), 'exits cleanly');
+
+});
+
 test('Fredrick responds to usage command', function(t) {
 
   t.test('with no command', function(t) {
