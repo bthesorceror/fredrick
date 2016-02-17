@@ -2,6 +2,47 @@ var test     = require('tape');
 var Fredrick = require('../index');
 var sinon    = require('sinon');
 
+test('Fredrick does not allow plugins without command', function(t) {
+  t.plan(1);
+  var fredrick = new Fredrick('fredrick');
+
+  function noop(){};
+
+  var plugin = {
+    func: noop,
+    description: 'description 1'
+  };
+
+  try {
+    fredrick.addPlugin(plugin);
+    t.ok(false, 'should not get here');
+  } catch(ex) {
+    t.ok(true, 'throws error');
+  }
+});
+
+test('Fredrick does not allow plugins with the same command', function(t) {
+  t.plan(1);
+  var fredrick = new Fredrick('fredrick');
+
+  function noop(){};
+
+  var plugin = {
+    command: 'command',
+    func: noop,
+    description: 'description 1'
+  };
+
+  fredrick.addPlugin(plugin);
+
+  try {
+    fredrick.addPlugin(plugin);
+    t.ok(false, 'should not get here');
+  } catch(ex) {
+    t.ok(true, 'throws error');
+  }
+});
+
 test('Fredrick has the ability to be extended', function(t) {
 
   t.test('adds method', function(t) {

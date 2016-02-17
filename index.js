@@ -67,6 +67,12 @@ class Fredrick {
   }
 
   addPlugin(plugin) {
+    if (!plugin.command)
+      throw new Error('Plugins must have a command');
+
+    if (this.findPlugin(plugin.command))
+      throw new Error(`'${plugin.command}' command is already used`);
+
     this.checkForExtensions(plugin, 'Plugin');
     this.plugins.push(plugin);
   }
