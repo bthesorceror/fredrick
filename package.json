@@ -1,8 +1,9 @@
 {
   "name": "fredrick",
   "version": "1.0.0",
-  "description": "",
+  "description": "simple module for writing your spiffy command line tools",
   "main": "index.js",
+  "repository": "http://github.com/bthesorceror/fredrick",
   "scripts": {
     "test": "tape test/**/*_test.js"
   },
