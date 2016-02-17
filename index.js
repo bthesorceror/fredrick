@@ -4,11 +4,14 @@ const minimist = require('minimist');
 
 class Fredrick {
   constructor(name, options) {
-    options         = options || {};
-    this.name       = name;
-    this.stdout     = options.stdout || process.stdout;
-    this.stderr     = options.stderr || process.stderr;
-    this.exit       = options.exit || process.exit.bind(process);
+    options   = options || {};
+    this.name = name;
+
+    this.stdout = options.stdout || process.stdout;
+    this.stderr = options.stderr || process.stderr;
+    this.stdin  = options.stdin  || process.stdin;
+    this.exit   = options.exit   || process.exit.bind(process);
+
     this.plugins    = [];
     this.extensions = [];
 
