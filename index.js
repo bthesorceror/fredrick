@@ -2,80 +2,19 @@
 
 const minimist = require('minimist');
 
-const help = {
-  command: 'help',
-  hidden: true,
-  func(fredrick, args) {
-    fredrick.write('Help:');
-
-    fredrick.write();
-    fredrick.write(`'${fredrick.name} list' lists all available commands.`);
-    fredrick.write(`'${fredrick.name} usage <command>' shows usage for a command.`);
-    fredrick.write();
-
-    fredrick.exit(0);
-  }
-}
-
-const list = {
-  command: 'list',
-  hidden: true,
-  func(fredrick, args) {
-    fredrick.write('List:');
-    fredrick.write();
-
-    fredrick.plugins.forEach((plugin) => {
-      if (plugin.hidden) return;
-
-      fredrick.write(plugin.command);
-      fredrick.write(`  ${plugin.description}`);
-    });
-
-    fredrick.write();
-
-    fredrick.exit(0);
-  }
-}
-
-const usage = {
-  command: 'usage',
-  hidden: true,
-  func(fredrick, args) {
-    if (args.length < 1) {
-      fredrick.write(`${fredrick.name} usage <command>`);
-      return fredrick.exit(1);
-    }
-
-    var plugin = fredrick.findPlugin(args[0]);
-
-    if (!plugin) {
-      fredrick.write('Invalid command');
-      return fredrick.exit(1);
-    }
-
-    fredrick.write('Usage:');
-
-    if (plugin.usage)
-      fredrick.write(plugin.usage);
-    else
-      fredrick.write('No usage defined');
-
-    fredrick.exit(0);
-  }
-}
-
 class Fredrick {
   constructor(name, options) {
-    options      = options || {};
-    this.name    = name;
-    this.stdout  = options.stdout || process.stdout;
-    this.stderr  = options.stderr || process.stderr;
-    this.exit    = options.exit || process.exit.bind(process);
-    this.plugins = [];
+    options         = options || {};
+    this.name       = name;
+    this.stdout     = options.stdout || process.stdout;
+    this.stderr     = options.stderr || process.stderr;
+    this.exit       = options.exit || process.exit.bind(process);
+    this.plugins    = [];
+    this.extensions = [];
 
-    this.addPlugin(help);
-    this.addPlugin(list);
-    this.addPlugin(usage);
+    this.addPlugin(require('./lib/plugins/help'));
+    this.addPlugin(require('./lib/plugins/list'));
+    this.addPlugin(require('./lib/plugins/usage'));
   }
 
   write(str) {
@@ -118,7 +57,30 @@ class Fredrick {
     });
   }
 
-  addPlugin(plugin) { this.plugins.push(plugin); }
+  checkForExtensions(object, type) {
+    if (object.extensions && object.extensions.length) {
+      object.extensions.forEach((name) => {
+        if (!this.hasExtension(name))
+          throw new Error(`${type} requires extension named ${name}`);
+      });
+    }
+  }
+
+  addPlugin(plugin) {
+    this.checkForExtensions(plugin, 'Plugin');
+    this.plugins.push(plugin);
+  }
+
+  hasExtension(name) {
+    return !!this[name];
+  }
+
+  addExtension(extension) {
+    if (this.hasExtension(extension.name))
+      throw new Error('Extension name already taken');
+    this.checkForExtensions(extension, 'Extension');
+    this[extension.name] = extension.func;
+  }
 }
 
 module.exports = Fredrick;

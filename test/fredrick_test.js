@@ -2,6 +2,130 @@ var test     = require('tape');
 var Fredrick = require('../index');
 var sinon    = require('sinon');
 
+test('Fredrick has the ability to be extended', function(t) {
+
+  t.test('adds method', function(t) {
+
+    t.plan(2);
+
+    var fredrick = new Fredrick('fredrick');
+
+    function func() {
+      t.equal(this, fredrick, 'keeps context');
+    }
+
+    var extension = {
+      name: 'helper',
+      func: func
+    };
+
+    fredrick.addExtension(extension);
+
+    fredrick.addPlugin({
+      command: 'command',
+      func: function(fredrick, args, options) {
+        t.equal(fredrick.helper, func, 'adds method');
+        fredrick.helper();
+      }
+    });
+
+    fredrick.respond(['command']);
+
+  });
+
+  t.test('with extensions name taken', function(t) {
+
+    t.plan(1);
+
+    var fredrick = new Fredrick('fredrick');
+
+    function func() {}
+
+    var extension = {
+      name: 'helper',
+      func: func
+    };
+
+    fredrick.addExtension(extension);
+
+    try {
+      fredrick.addExtension(extension);
+    } catch(ex) {
+      t.ok(true, 'throws error');
+    }
+
+  });
+
+  t.test('with plugin requiring extension', function(t) {
+
+    t.test('extension loaded', function(t) {
+      t.plan(2);
+
+      var fredrick = new Fredrick('fredrick');
+
+      function func() {
+        t.equal(this, fredrick, 'keeps context');
+      }
+
+      var extension = {
+        name: 'helper',
+        func: func
+      };
+
+      fredrick.addExtension(extension);
+
+      fredrick.addPlugin({
+        command: 'command',
+        extensions: ['helper'],
+        func: function(fredrick, args, options) {
+          t.equal(fredrick.helper, func, 'adds method');
+          fredrick.helper();
+        }
+      });
+
+      fredrick.respond(['command']);
+    });
+
+    t.test('extension not loaded', function(t) {
+      t.plan(1);
+
+      var fredrick = new Fredrick('fredrick');
+
+      try {
+        fredrick.addPlugin({
+          command: 'command',
+          extensions: ['helper'],
+          func: function(fredrick, args, options) {}
+        });
+        t.ok(false, 'should not reach');
+      } catch(ex) {
+        t.ok(true, 'throws error');
+      }
+    });
+
+  });
+
+  t.test('with extension requiring extension', function(t) {
+    t.plan(1);
+
+    var fredrick = new Fredrick('fredrick');
+
+    var extension = {
+      name: 'helper',
+      extensions: ['tester'],
+      func: function(){}
+    };
+
+    try {
+      fredrick.addExtension(extension);
+      t.ok(false, 'should not reach');
+    } catch(ex) {
+      t.ok(true, 'throws error');
+    }
+  });
+
+});
+
 test('Fredrick allows errors', function(t) {
   t.plan(1);
   var fakeStderr = { write: sinon.spy() };
