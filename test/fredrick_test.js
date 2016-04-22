@@ -43,6 +43,105 @@ test('Fredrick does not allow plugins with the same command', function(t) {
   }
 });
 
+test('Fredrick has the ability to add properties', function(t) {
+
+  t.test('adds property with static value', function(t) {
+    t.plan(1);
+
+    var fredrick = new Fredrick('fredrick');
+
+    var property = {
+      name: 'myNumber',
+      value: 10
+    };
+
+    fredrick.addProperty(property);
+
+    fredrick.addPlugin({
+      command: 'command',
+      func: function(fredrick, args, options) {
+        t.equal(fredrick.myNumber, 10, 'adds property');
+      }
+    });
+
+    fredrick.respond(['command']);
+  });
+
+  t.test('adds property with function', function(t) {
+    t.plan(1);
+
+    var fredrick = new Fredrick('fredrick');
+
+    var property = {
+      name: 'myNumber',
+      value: function() { return 10; }
+    };
+
+    fredrick.addProperty(property);
+
+    fredrick.addPlugin({
+      command: 'command',
+      func: function(fredrick, args, options) {
+        t.equal(fredrick.myNumber, 10, 'adds property');
+      }
+    });
+
+    fredrick.respond(['command']);
+  });
+
+  t.test('with property name taken', function(t) {
+
+    t.plan(1);
+
+    var fredrick = new Fredrick('fredrick');
+
+    function func() {}
+
+    var property = {
+      name: 'b',
+      value: 10
+    };
+
+    fredrick.addProperty(property);
+
+    try {
+      fredrick.addProperty(property);
+    } catch(ex) {
+      t.ok(true, 'throws error');
+    }
+
+  });
+
+  t.test('with property name taken by an extension', function(t) {
+
+    t.plan(1);
+
+    var fredrick = new Fredrick('fredrick');
+
+    function func() {}
+
+    var extension = {
+      name: 'b',
+      func(){}
+    };
+
+    var property = {
+      name: 'b',
+      value: 10
+    };
+
+    fredrick.addExtension(property);
+
+    try {
+      fredrick.addProperty(property);
+    } catch(ex) {
+      t.ok(true, 'throws error');
+    }
+
+  });
+
+});
+
 test('Fredrick has the ability to be extended', function(t) {
 
   t.test('adds method', function(t) {
@@ -165,7 +264,108 @@ test('Fredrick has the ability to be extended', function(t) {
     }
   });
 
+  t.test('with extension requiring property', function(t) {
+    t.plan(1);
+
+    var fredrick = new Fredrick('fredrick');
+
+    var extension = {
+      name: 'helper',
+      properties: ['tester'],
+      func: function(){}
+    };
+
+    try {
+      fredrick.addExtension(extension);
+      t.ok(false, 'should not reach');
+    } catch(ex) {
+      t.ok(true, 'throws error');
+    }
+  });
+
 });
+
+test('Plugin requires properties', function(t) {
+
+  t.test('property loaded', function(t) {
+    t.plan(1);
+
+    var fredrick = new Fredrick('fredrick');
+
+    var property = {
+      name: 'helper',
+      value: 10
+    };
+
+    fredrick.addProperty(property);
+
+    fredrick.addPlugin({
+      command: 'command',
+      properties: ['helper'],
+      func: function(fredrick, args, options) {
+        t.equal(fredrick.helper, 10, 'adds method');
+      }
+    });
+
+    fredrick.respond(['command']);
+  });
+
+  t.test('property not loaded', function(t) {
+    t.plan(1);
+
+    var fredrick = new Fredrick('fredrick');
+
+    try {
+      fredrick.addPlugin({
+        command: 'command',
+        properties: ['helper'],
+        func: function(fredrick, args, options) {}
+      });
+      t.ok(false, 'should not reach');
+    } catch(ex) {
+      t.ok(true, 'throws error');
+    }
+  });
+
+  t.test('with property requiring extension', function(t) {
+    t.plan(1);
+
+    var fredrick = new Fredrick('fredrick');
+
+    var property = {
+      name: 'helper',
+      extensions: ['tester'],
+      value: 10
+    };
+
+    try {
+      fredrick.addProperty(property);
+      t.ok(false, 'should not reach');
+    } catch(ex) {
+      t.ok(true, 'throws error');
+    }
+  });
+
+  t.test('with property requiring properties', function(t) {
+    t.plan(1);
+
+    var fredrick = new Fredrick('fredrick');
+
+    var property = {
+      name: 'helper',
+      properties: ['tester'],
+      value: 10
+    };
+
+    try {
+      fredrick.addProperty(property);
+      t.ok(false, 'should not reach');
+    } catch(ex) {
+      t.ok(true, 'throws error');
+    }
+  });
+})
+
 
 test('Fredrick allows errors', function(t) {
   t.plan(1);
@@ -175,48 +375,40 @@ test('Fredrick allows errors', function(t) {
 
   fredrick.error('testing');
 
-  t.ok(
-    fakeStderr.write.calledWith('testing\n'),
-    'writes out to stderr');
+  t.ok(fakeStderr.write.calledWith('testing\n'), 'writes out to stderr');
 });
 
 test('Fredrick allows options', function(t) {
 
-    t.plan(3);
+  t.plan(3);
 
-    var fakeStdout = { write: sinon.spy() };
-    var fakeExit   = sinon.spy();
+  var fakeStdout = { write: sinon.spy() };
+  var fakeExit   = sinon.spy();
 
-    var fredrick = new Fredrick('fredrick', {
-      stdout: fakeStdout, exit: fakeExit
-    });
+  var fredrick = new Fredrick('fredrick', {
+    stdout: fakeStdout, exit: fakeExit
+  });
 
-    function func(fredrick, args, options) {
-      t.ok(true, 'calls func');
-      t.deepEqual(
-        args,
-        ['list'],
-        'does not removes the subcommand from args');
+  function func(fredrick, args, options) {
+    t.ok(true, 'calls func');
 
-      t.equal(
-        options.prod,
-        true,
-        'receives prod as option');
-      return;
-    }
+    t.deepEqual(args, ['list'], 'does not removes the subcommand from args');
 
-    fredrick.addPlugin({
-      command: 'test1',
-      func: func,
-      description: 'description 1',
-      usage: 'usage 1',
-      subcommands: {
-      }
-    });
+    t.equal(options.prod, true, 'receives prod as option');
+    return;
+  }
 
-    var args = ['test1', 'list', '--prod'];
+  fredrick.addPlugin({
+    command: 'test1',
+    func: func,
+    description: 'description 1',
+    usage: 'usage 1',
+    subcommands: { }
+  });
 
-    fredrick.respond(args);
+  var args = ['test1', 'list', '--prod'];
+
+  fredrick.respond(args);
 
 });
 
@@ -270,10 +462,7 @@ test('Fredrick allows for subcommands', function(t) {
 
     function func(fredrick, args, options) {
       t.ok(true, 'calls func');
-      t.deepEqual(
-        args,
-        ['list'],
-        'does not removes the subcommand from args');
+      t.deepEqual(args, ['list'], 'does not removes the subcommand from args');
       return;
     }
 
@@ -310,13 +499,9 @@ test('Fredrick responds to help command', function(t) {
   t.plan(4);
   t.ok(fakeStdout.write.calledWith('Help:\n'), 'writes header');
 
-  t.ok(
-    fakeStdout.write.calledWith("'fredrick list' lists all available commands.\n"),
-    'writes help for list');
+  t.ok(fakeStdout.write.calledWith("'fredrick list' lists all available commands.\n"), 'writes help for list');
 
-  t.ok(
-    fakeStdout.write.calledWith("'fredrick usage <command>' shows usage for a command.\n"),
-    'writes help for usage');
+  t.ok(fakeStdout.write.calledWith("'fredrick usage <command>' shows usage for a command.\n"), 'writes help for usage');
 
   t.ok(fakeExit.calledWith(0), 'exits cleanly');
 
@@ -359,9 +544,7 @@ test('Fredrick responds to usage command', function(t) {
 
     t.plan(2);
 
-    t.ok(
-      fakeStderr.write.calledWith("fredrick usage <command>\n"),
-      'write correct use of usage command');
+    t.ok(fakeStderr.write.calledWith("fredrick usage <command>\n"), 'write correct use of usage command');
 
     t.ok(fakeExit.calledWith(1), 'exits with error');
 
@@ -382,9 +565,7 @@ test('Fredrick responds to usage command', function(t) {
 
     t.plan(2);
 
-    t.ok(
-      fakeStderr.write.calledWith("Invalid command\n"),
-      'write for invalid command');
+    t.ok(fakeStderr.write.calledWith("Invalid command\n"), 'write for invalid command');
 
     t.ok(fakeExit.calledWith(1), 'exits with error');
 
@@ -414,13 +595,9 @@ test('Fredrick responds to usage command', function(t) {
 
     t.plan(3);
 
-    t.ok(
-      fakeStdout.write.calledWith("Usage:\n"),
-      'write header');
+    t.ok(fakeStdout.write.calledWith("Usage:\n"), 'write header');
 
-    t.ok(
-      fakeStdout.write.calledWith("usage 1\n"),
-      'write command usage');
+    t.ok(fakeStdout.write.calledWith("usage 1\n"), 'write command usage');
 
     t.ok(fakeExit.calledWith(0), 'exits cleanly');
 
@@ -449,13 +626,9 @@ test('Fredrick responds to usage command', function(t) {
 
     t.plan(3);
 
-    t.ok(
-      fakeStdout.write.calledWith("Usage:\n"),
-      'write header');
+    t.ok(fakeStdout.write.calledWith("Usage:\n"), 'write header');
 
-    t.ok(
-      fakeStdout.write.calledWith("No usage defined\n"),
-      'write command usage');
+    t.ok(fakeStdout.write.calledWith("No usage defined\n"), 'write command usage');
 
     t.ok(fakeExit.calledWith(0), 'exits cleanly');
 

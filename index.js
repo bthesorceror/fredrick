@@ -14,6 +14,7 @@ class Fredrick {
 
     this.plugins    = [];
     this.extensions = [];
+    this.properties = [];
 
     this.addPlugin(require('./lib/plugins/help'));
     this.addPlugin(require('./lib/plugins/list'));
@@ -72,6 +73,16 @@ class Fredrick {
     }
   }
 
+  checkForProperties(object, type) {
+    if (!object.properties || !object.properties.length) return;
+
+    object.properties.forEach((name) => {
+      if (this.hasProperty(name)) return;
+
+      throw new Error(`${type} requires property named ${name}`);
+    });
+  }
+
   addPlugin(plugin) {
     if (!plugin.command)
       throw new Error('Plugins must have a command');
@@ -80,18 +91,50 @@ class Fredrick {
       throw new Error(`'${plugin.command}' command is already used`);
 
     this.checkForExtensions(plugin, 'Plugin');
+    this.checkForProperties(plugin, 'Plugin');
+    
     this.plugins.push(plugin);
   }
 
   hasExtension(name) {
-    return !!this[name];
+    return !!this.extensions.find((value) => {
+      return name === value;
+    });
+  }
+
+  hasProperty(name) {
+    return !!this.properties.find((value) => {
+      return name === value;
+    });
   }
 
   addExtension(extension) {
     if (this.hasExtension(extension.name))
       throw new Error('Extension name already taken');
     this.checkForExtensions(extension, 'Extension');
+    this.checkForProperties(extension, 'Extension');
+
+    this.extensions.push(extension.name);
     this[extension.name] = extension.func;
+  }
+
+  addProperty(property) {
+    if (this.hasProperty(property.name))
+      throw new Error('Property name already taken');
+    if (this.hasExtension(property.name))
+      throw new Error('Property name already taken by an extension');
+
+    this.checkForExtensions(property, 'Property');
+    this.checkForProperties(property, 'Property');
+
+    this.properties.push(property.name);
+    let getter = function() { return property.value };
+
+    if (property.value instanceof Function) {
+      getter = property.value;
+    }
+
+    Object.defineProperty(this, property.name, { get: getter });
   }
 }
 

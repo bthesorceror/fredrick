@@ -26,11 +26,19 @@ fredrick.addExtension({
   }
 });
 
+fredrick.addProperty({
+  name: 'value1',
+  value: function() {
+    return 10;
+  }
+})
+
 fredrick.addPlugin({
   command: 'test',
   usage: 'fredrick test [--prod] [--error]',
   description: 'a test command',
   extensions: ['test2'],
+  properties: ['value1'],
   func(fredrick, args, options) {
     if (options.prod) {
       fredrick.write('PRODUCTION!');
@@ -41,6 +49,8 @@ fredrick.addPlugin({
     }
 
     fredrick.test2();
+
+    fredrick.value1 === 10;
 
     fredrick.write('TESTING');
     fredrick.exit(0);
